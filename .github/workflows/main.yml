@@ -1,0 +1,33 @@
+name: Morning Stock Report
+
+on:
+  schedule:
+    # 11:30 UTC, Monday-Friday.
+    # That lands at ~7:30 AM Toronto time in summer (EDT) and ~6:30 AM in winter (EST).
+    # GitHub cron does not follow daylight saving, so adjust the hour if you prefer.
+    - cron: "30 11 * * 1-5"
+  workflow_dispatch:   # adds a "Run workflow" button so you can fire it manually too
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build and send the report
+        run: python morning_report.py
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO:  ${{ secrets.EMAIL_TO }}
